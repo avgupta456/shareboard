@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { BounceLoader } from "react-spinners";
 
-import { MultiSelect, TextInput } from "@mantine/core";
+import { Button, MultiSelect, TextInput } from "@mantine/core";
 
 import { useSupabase } from "../../components/supabase-provider";
 import { selectUser } from "../../db/users/select";
@@ -26,6 +26,7 @@ const Page = () => {
   const [tableColumns, setTableColumns] = useState({});
   const [selectedTables, setSelectedTables] = useState([]);
   const [question, setQuestion] = useState("");
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
     if (!session) return;
@@ -68,6 +69,28 @@ const Page = () => {
     fetchTables();
   }, [debouncedConnUrl]);
 
+  const handleQuestion = async () => {
+    if (!question) return;
+
+    const currSelectedTables = selectedTables.length > 0 ? selectedTables : tables;
+    await fetch("/api/openai", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        selectedTables: currSelectedTables,
+        tableColumns,
+        question,
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        const newQuery = data?.response?.choices?.[0]?.text;
+        if (newQuery) setQuery(newQuery);
+      });
+  };
+
   if (loading) {
     return (
       <div className="w-full container mx-auto flex-grow p-4 flex items-center justify-center">
@@ -75,9 +98,6 @@ const Page = () => {
       </div>
     );
   }
-
-  console.log("Tables", tables);
-  console.log("Table Columns", tableColumns);
 
   return (
     <div className="w-full container mx-auto flex-grow p-4 flex flex-col items-center">
@@ -113,8 +133,36 @@ const Page = () => {
           value={selectedTables}
           onChange={setSelectedTables}
         />
+        <Button
+          variant="outline"
+          color="blue"
+          disabled={tables?.length === 0 || !question}
+          className="mt-6"
+          onClick={handleQuestion}
+        >
+          Ask Question
+        </Button>
       </div>
       <div className="w-full text-center text-lg font-bold mt-4">Or enter a SQL query directly</div>
+      <div className="w-full flex flex-wrap gap-4 mt-4">
+        <TextInput
+          label="Query"
+          placeholder="Set Query"
+          disabled={tables?.length === 0}
+          className="flex-grow"
+          value={query}
+          onChange={(event) => setQuery(event.currentTarget.value)}
+        />
+        <Button
+          variant="outline"
+          color="blue"
+          disabled={tables?.length === 0 || !query}
+          className="mt-6"
+          onClick={() => console.log("TODO: Run Query")}
+        >
+          Run Query
+        </Button>
+      </div>
     </div>
   );
 };
