@@ -1,3 +1,5 @@
+import { classnames } from "../utils/utils";
+
 export const fetchTables = async (debouncedConnUrl, setTables, setTableColumns) => {
   await fetch("/api/get_tables", {
     method: "POST",
@@ -52,12 +54,32 @@ export const handleQuery = async (query, connUrl, setOutput) => {
     });
 };
 
+export const TableHeaders = ({ tableColumns, selectedTables }) => {
+  return (
+    <>
+      <div className="w-full mt-2 font-bold">Table Headers</div>
+      {selectedTables.map((table, i) => (
+        <div key={i} className="w-full flex flex-col mb-2">
+          <div>{table}</div>
+          <div className="w-full flex flex-row overflow-x-scroll scrollbar-hide">
+            {tableColumns[table].map((column, j) => (
+              <div key={j} className={classnames("px-2 py-1 text-sm", j % 2 && "bg-gray-100")}>
+                {column}
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </>
+  );
+};
+
 export const OutputTable = ({ output }) => {
   const headers = output?.[0] ? Object.keys(output?.[0]) : [];
   const rows = Array.isArray(output) ? output?.map((row) => Object.values(row)) : [];
 
   return (
-    <div className="overflow-x-auto text-sm">
+    <div className="w-full overflow-x-scroll scrollbar-hide text-sm">
       <table className="table-auto">
         <thead>
           <tr>
@@ -71,7 +93,7 @@ export const OutputTable = ({ output }) => {
         <tbody>
           {rows.map((row, i) => (
             <tr key={i}>
-              {row.map((cell, j) => (
+              {row.map((cell: any, j) => (
                 <td className="border px-2 py-1" key={j}>
                   {cell}
                 </td>

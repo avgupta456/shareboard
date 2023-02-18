@@ -12,6 +12,7 @@ import { insertGeneralLink } from "../../db/general_links/insert";
 import { selectUser } from "../../db/users/select";
 import {
   OutputTable,
+  TableHeaders,
   fetchTables as _fetchTables,
   handleQuery as _handleQuery,
   handleQuestion as _handleQuestion,
@@ -138,6 +139,9 @@ const Page = () => {
         >
           Ask Question
         </Button>
+      </div>
+      <div className="w-full">
+        <TableHeaders tableColumns={tableColumns} selectedTables={selectedTables} />
       </div>
       <div className="w-full text-center text-lg font-bold mt-4">Or enter a SQL query directly</div>
       <div className="w-full flex flex-wrap gap-4 mt-4">

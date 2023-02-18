@@ -8,6 +8,7 @@ import { useSupabase } from "../../components/supabase-provider";
 import { selectGeneralLink } from "../../db/general_links/select";
 import {
   OutputTable,
+  TableHeaders,
   fetchTables as _fetchTables,
   handleQuery as _handleQuery,
   handleQuestion as _handleQuestion,
@@ -104,6 +105,9 @@ const Page = ({ params }: { params: { link: string } }) => {
         >
           Ask Question
         </Button>
+      </div>
+      <div className="w-full">
+        <TableHeaders tableColumns={tableColumns} selectedTables={selectedTables} />
       </div>
       <div className="w-full text-center text-lg font-bold mt-4">Output</div>
       <div className="w-full">
