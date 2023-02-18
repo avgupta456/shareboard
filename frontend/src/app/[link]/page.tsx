@@ -25,6 +25,10 @@ const Page = ({ params }: { params: { link: string } }) => {
   const [query, setQuery] = useState("");
   const [output, setOutput] = useState([]);
 
+  console.log("Question", question);
+  console.log("Query", query);
+  console.log("Output", output);
+
   useEffect(() => {
     const fetchGeneralLink = async () => {
       const tempGeneralLink = await selectGeneralLink(supabase, link);

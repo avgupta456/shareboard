@@ -47,6 +47,7 @@ export const handleQuery = async (query, connUrl, setOutput) => {
   })
     .then((res) => res.json())
     .then((data) => {
+      console.log("Raw Output", data);
       setOutput(data?.result ?? data?.error ?? []);
     });
 };
