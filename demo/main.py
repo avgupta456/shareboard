@@ -1,11 +1,13 @@
+import sys
 from typing import List
 
 from dotenv import load_dotenv  # type: ignore
 
-from sqlalchemy import create_engine, inspect
-import openai
-
 load_dotenv()
+
+import openai
+import tabulate
+from sqlalchemy import create_engine, inspect
 
 # flake8: noqa E402
 from constants import CONN_URL, OPENAI_KEY
@@ -73,18 +75,22 @@ def get_response(prompt: str) -> str:
 def run_query(query: str) -> str:
     with engine.connect() as con:
         rs = con.execute(query)
-        return rs.fetchall()
+        return [dict(row) for row in rs]
 
 
-prompt = make_prompt(
-    ["team_years"],
-    "List the top 10 teams in MI that won the most matches in 2022.",
-)
+# Read the command line arguments
+question = sys.argv[1]
+tables = sys.argv[2:] if len(sys.argv) > 2 else get_table_names()
 
-print(prompt)
+prompt = make_prompt(tables, question)
+
+# print(prompt)
 
 query = get_response(prompt)
 
 print(query)
+print()
 
-print(run_query(query))
+output = run_query(query)
+
+print(tabulate.tabulate(output, headers="keys", tablefmt="fancy_grid"))
