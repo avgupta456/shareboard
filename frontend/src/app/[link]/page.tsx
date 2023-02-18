@@ -52,9 +52,17 @@ const Page = ({ params }: { params: { link: string } }) => {
 
   const handleQuestion = async () => {
     await _handleQuestion(question, selectedTables, tables, tableColumns, setQuery);
-    await sleep(100);
-    await _handleQuery(query, connUrl, setOutput);
   };
+
+  useEffect(() => {
+    if (!query) return;
+
+    const handleQuery = async () => {
+      await _handleQuery(query, connUrl, setOutput);
+    };
+
+    handleQuery();
+  }, [connUrl, query]);
 
   if (!generalLink) {
     return (

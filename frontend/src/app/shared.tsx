@@ -17,7 +17,7 @@ export const handleQuestion = async (question, selectedTables, tables, tableColu
   if (!question) return;
 
   const currSelectedTables = selectedTables.length > 0 ? selectedTables : tables;
-  await fetch("/api/openai", {
+  fetch("/api/openai", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -38,7 +38,7 @@ export const handleQuestion = async (question, selectedTables, tables, tableColu
 export const handleQuery = async (query, connUrl, setOutput) => {
   if (!query) return;
 
-  await fetch("/api/run_query", {
+  fetch("/api/run_query", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
