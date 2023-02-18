@@ -6,8 +6,8 @@ import { Button, MultiSelect, TextInput } from "@mantine/core";
 
 import { useSupabase } from "../../components/supabase-provider";
 import { selectGeneralLink } from "../../db/general_links/select";
-import { sleep } from "../../utils/utils";
 import {
+  OutputTable,
   fetchTables as _fetchTables,
   handleQuery as _handleQuery,
   handleQuestion as _handleQuestion,
@@ -107,7 +107,7 @@ const Page = ({ params }: { params: { link: string } }) => {
       </div>
       <div className="w-full text-center text-lg font-bold mt-4">Output</div>
       <div className="w-full">
-        <pre>{JSON.stringify(output, null, 2)}</pre>
+        <OutputTable output={output} />
       </div>
     </div>
   );

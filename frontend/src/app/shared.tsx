@@ -51,3 +51,35 @@ export const handleQuery = async (query, connUrl, setOutput) => {
       setOutput(data?.result ?? data?.error ?? []);
     });
 };
+
+export const OutputTable = ({ output }) => {
+  const headers = output?.[0] ? Object.keys(output?.[0]) : [];
+  const rows = Array.isArray(output) ? output?.map((row) => Object.values(row)) : [];
+
+  return (
+    <div className="overflow-x-auto text-sm">
+      <table className="table-auto">
+        <thead>
+          <tr>
+            {headers.map((header, i) => (
+              <th className="px-2 py-1" key={i}>
+                {header}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, i) => (
+            <tr key={i}>
+              {row.map((cell, j) => (
+                <td className="border px-2 py-1" key={j}>
+                  {cell}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};

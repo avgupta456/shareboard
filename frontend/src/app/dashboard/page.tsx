@@ -11,6 +11,7 @@ import { useSupabase } from "../../components/supabase-provider";
 import { insertGeneralLink } from "../../db/general_links/insert";
 import { selectUser } from "../../db/users/select";
 import {
+  OutputTable,
   fetchTables as _fetchTables,
   handleQuery as _handleQuery,
   handleQuestion as _handleQuestion,
@@ -160,7 +161,7 @@ const Page = () => {
       </div>
       <div className="w-full text-center text-lg font-bold mt-4">Output</div>
       <div className="w-full">
-        <pre>{JSON.stringify(output, null, 2)}</pre>
+        <OutputTable output={output} />
       </div>
     </div>
   );
