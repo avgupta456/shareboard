@@ -42,7 +42,5 @@ export default async function handler(req, res) {
     stop: ["Schema:", "Question:", "Answer:"],
   });
 
-  console.log("RESPONSE", response.data);
-
   return res.status(200).json({ response: response.data });
 }

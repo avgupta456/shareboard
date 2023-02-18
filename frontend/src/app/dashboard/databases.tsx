@@ -7,7 +7,6 @@ const data = [
     image: "/postgres.svg",
     label: "PostgreSQL",
     value: "postgres",
-    disabled: true,
   },
   {
     image: "/mysql.svg",

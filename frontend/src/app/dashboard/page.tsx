@@ -1,15 +1,21 @@
 "use client";
 
+import { v4 as uuidv4 } from "uuid";
+
 import React, { useEffect, useState } from "react";
 import { BounceLoader } from "react-spinners";
 
 import { Button, MultiSelect, TextInput } from "@mantine/core";
 
 import { useSupabase } from "../../components/supabase-provider";
+import { insertGeneralLink } from "../../db/general_links/insert";
 import { selectUser } from "../../db/users/select";
+import {
+  fetchTables as _fetchTables,
+  handleQuery as _handleQuery,
+  handleQuestion as _handleQuestion,
+} from "../shared";
 import DBSelect from "./databases";
-
-// import Calendar from "./calendar";
 
 // do not cache this page
 export const revalidate = 0;
@@ -53,59 +59,28 @@ const Page = () => {
     if (!debouncedConnUrl) return;
 
     const fetchTables = async () => {
-      await fetch("/api/get_tables", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ connUrl: debouncedConnUrl }),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          setTables(data.tables);
-          setTableColumns(data.tableColumns);
-        });
+      await _fetchTables(debouncedConnUrl, setTables, setTableColumns);
     };
 
     fetchTables();
   }, [debouncedConnUrl]);
 
   const handleQuestion = async () => {
-    if (!question) return;
-
-    const currSelectedTables = selectedTables.length > 0 ? selectedTables : tables;
-    await fetch("/api/openai", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        selectedTables: currSelectedTables,
-        tableColumns,
-        question,
-      }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        const newQuery = data?.response?.choices?.[0]?.text;
-        if (newQuery) setQuery(newQuery);
-      });
+    await _handleQuestion(question, selectedTables, tables, tableColumns, setQuery);
   };
 
   const handleQuery = async () => {
-    if (!query) return;
+    await _handleQuery(query, connUrl, setOutput);
+  };
 
-    await fetch("/api/run_query", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ connUrl, query }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setOutput(data?.result ?? data?.error ?? []);
-      });
+  const saveGeneralLink = async () => {
+    if (!connUrl) return;
+
+    // generate UUID
+    const link = uuidv4();
+    const user_id = session.user.id;
+
+    await insertGeneralLink(supabase, link, user_id, connUrl, "Temp Name");
   };
 
   if (loading) {
@@ -130,6 +105,9 @@ const Page = () => {
           value={connUrl}
           onChange={(event) => setConnUrl(event.currentTarget.value)}
         />
+        <Button variant="outline" color="blue" disabled={!connUrl} onClick={saveGeneralLink}>
+          Save Connection
+        </Button>
       </div>
       <div className="w-full text-center text-lg font-bold mt-4">Either ask a question</div>
       <div className="w-full flex flex-wrap gap-4 mt-4">

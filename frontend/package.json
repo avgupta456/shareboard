@@ -31,7 +31,8 @@
     "react-dom": "18.2.0",
     "react-icons": "^4.7.1",
     "react-spinners": "^0.13.8",
-    "server-only": "^0.0.1"
+    "server-only": "^0.0.1",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^4.0.0",
