@@ -27,6 +27,7 @@ const Page = () => {
   const [selectedTables, setSelectedTables] = useState([]);
   const [question, setQuestion] = useState("");
   const [query, setQuery] = useState("");
+  const [output, setOutput] = useState([]);
 
   useEffect(() => {
     if (!session) return;
@@ -88,6 +89,22 @@ const Page = () => {
       .then((data) => {
         const newQuery = data?.response?.choices?.[0]?.text;
         if (newQuery) setQuery(newQuery);
+      });
+  };
+
+  const handleQuery = async () => {
+    if (!query) return;
+
+    await fetch("/api/run_query", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ connUrl, query }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setOutput(data?.result ?? data?.error ?? []);
       });
   };
 
@@ -158,10 +175,14 @@ const Page = () => {
           color="blue"
           disabled={tables?.length === 0 || !query}
           className="mt-6"
-          onClick={() => console.log("TODO: Run Query")}
+          onClick={handleQuery}
         >
           Run Query
         </Button>
+      </div>
+      <div className="w-full text-center text-lg font-bold mt-4">Output</div>
+      <div className="w-full">
+        <pre>{JSON.stringify(output, null, 2)}</pre>
       </div>
     </div>
   );
