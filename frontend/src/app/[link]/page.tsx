@@ -6,6 +6,7 @@ import { Button, MultiSelect, TextInput } from "@mantine/core";
 
 import { useSupabase } from "../../components/supabase-provider";
 import { selectGeneralLink } from "../../db/general_links/select";
+import { sleep } from "../../utils/utils";
 import {
   fetchTables as _fetchTables,
   handleQuery as _handleQuery,
@@ -51,6 +52,7 @@ const Page = ({ params }: { params: { link: string } }) => {
 
   const handleQuestion = async () => {
     await _handleQuestion(question, selectedTables, tables, tableColumns, setQuery);
+    await sleep(100);
     await _handleQuery(query, connUrl, setOutput);
   };
 
