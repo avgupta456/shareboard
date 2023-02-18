@@ -10,14 +10,14 @@ export default async function handler(req, res) {
   const tableColumns = req.body.tableColumns;
   const question = req.body.question;
 
-  let prompt = `Create a valid Postgres SQL query to answer the question.
+  let prompt = `Create the simplest valid Postgres SQL query to answer the question. Infer specific rows wanted, and limit to 20 rows if not specified.
 
   Schema:
   Table customers, columns = [CustomerId, FirstName, LastName, Company, Address, City, State, Country, PostalCode, Phone, Fax, Email, SupportRepId]
   
   Question: Create a MySQL query for all customers in Texas named Jane
   
-  Answer: SELECT * FROM customers WHERE State = 'Texas' AND FirstName = 'Jane'
+  Answer: SELECT customerId, firstName, lastName, State FROM customers WHERE State = 'Texas' AND FirstName = 'Jane'
   
   Schema:
 `;
