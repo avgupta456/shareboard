@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { BounceLoader } from "react-spinners";
 
-import { TextInput } from "@mantine/core";
+import { MultiSelect, TextInput } from "@mantine/core";
 
 import { useSupabase } from "../../components/supabase-provider";
 import { selectUser } from "../../db/users/select";
@@ -22,6 +22,10 @@ const Page = () => {
   const [db, setDB] = useState(null);
   const [connUrl, setConnUrl] = useState("");
   const [debouncedConnUrl, setDebouncedConnUrl] = useState(null);
+  const [tables, setTables] = useState([]);
+  const [tableColumns, setTableColumns] = useState({});
+  const [selectedTables, setSelectedTables] = useState([]);
+  const [question, setQuestion] = useState("");
 
   useEffect(() => {
     if (!session) return;
@@ -56,7 +60,8 @@ const Page = () => {
       })
         .then((res) => res.json())
         .then((data) => {
-          console.log("DATA", data);
+          setTables(data.tables);
+          setTableColumns(data.tableColumns);
         });
     };
 
@@ -70,6 +75,9 @@ const Page = () => {
       </div>
     );
   }
+
+  console.log("Tables", tables);
+  console.log("Table Columns", tableColumns);
 
   return (
     <div className="w-full container mx-auto flex-grow p-4 flex flex-col items-center">
@@ -86,6 +94,27 @@ const Page = () => {
           onChange={(event) => setConnUrl(event.currentTarget.value)}
         />
       </div>
+      <div className="w-full text-center text-lg font-bold mt-4">Either ask a question</div>
+      <div className="w-full flex flex-wrap gap-4 mt-4">
+        <TextInput
+          label="Question"
+          placeholder="Set Question"
+          className="flex-grow"
+          disabled={tables?.length === 0}
+          value={question}
+          onChange={(event) => setQuestion(event.currentTarget.value)}
+        />
+        <MultiSelect
+          label="Tables (optional)"
+          placeholder="Use Specific Tables"
+          disabled={tables?.length === 0}
+          className="w-96"
+          data={tables?.map((table) => ({ label: table, value: table })) ?? []}
+          value={selectedTables}
+          onChange={setSelectedTables}
+        />
+      </div>
+      <div className="w-full text-center text-lg font-bold mt-4">Or enter a SQL query directly</div>
     </div>
   );
 };
