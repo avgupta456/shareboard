@@ -25,6 +25,7 @@
     "@supabase/supabase-js": "^2.7.1",
     "dayjs": "^1.11.7",
     "next": "13.1.6",
+    "pg": "^8.9.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-icons": "^4.7.1",

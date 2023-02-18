@@ -7,47 +7,56 @@ const data = [
     image: "/postgres.svg",
     label: "PostgreSQL",
     value: "postgres",
+    disabled: true,
   },
   {
     image: "/mysql.svg",
     label: "MySQL",
     value: "mysql",
+    disabled: true,
   },
   {
     image: "/sqlserver.svg",
     label: "SQL Server",
     value: "sqlserver",
+    disabled: true,
   },
   {
     image: "/sqlite.svg",
     label: "SQLite",
     value: "sqlite",
+    disabled: true,
   },
   {
     image: "/mongo.svg",
     label: "MongoDB",
     value: "mongo",
+    disabled: true,
   },
   {
     image: "/cockroach.svg",
     label: "CockroachDB",
     value: "cockroach",
+    disabled: false,
   },
   {
     image: "/planetscale.svg",
     label: "PlanetScale",
     value: "planetscale",
+    disabled: true,
   },
   {
     image: "/mariadb.png",
     label: "MariaDB",
     value: "mariadb",
+    disabled: true,
   },
 ];
 
 interface ItemProps extends React.ComponentPropsWithoutRef<"div"> {
   image: string;
   label: string;
+  disabled: boolean;
 }
 
 // eslint-disable-next-line react/display-name
@@ -66,7 +75,9 @@ const SelectItem = forwardRef<HTMLDivElement, ItemProps>(
 
 const DBSelect = ({ setSelected }: { setSelected: (value: string) => void }) => (
   <Select
+    label="Database Type"
     placeholder="Select a Database"
+    withAsterisk
     itemComponent={SelectItem}
     data={data}
     searchable
