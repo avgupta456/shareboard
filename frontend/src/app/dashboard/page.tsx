@@ -32,6 +32,7 @@ const Page = () => {
 
   const [db, setDB] = useState(null);
   const [connUrl, setConnUrl] = useState("");
+  const [name, setName] = useState("");
   const [debouncedConnUrl, setDebouncedConnUrl] = useState(null);
 
   const [urls, setUrls] = useState([]);
@@ -78,12 +79,13 @@ const Page = () => {
 
   const saveGeneralLink = async () => {
     if (!connUrl) return;
+    if (!name) return;
 
     // generate UUID
     const link = uuidv4();
     const user_id = session.user.id;
 
-    await insertGeneralLink(supabase, link, user_id, debouncedConnUrl, "Temp Name");
+    await insertGeneralLink(supabase, link, user_id, debouncedConnUrl, name);
   };
 
   if (loading) {
@@ -108,14 +110,28 @@ const Page = () => {
           value={connUrl}
           onChange={(event) => setConnUrl(event.currentTarget.value)}
         />
-        <Button variant="outline" color="blue" disabled={!connUrl} onClick={saveGeneralLink}>
+        <TextInput
+          label="Name"
+          placeholder="Set Name"
+          className="flex-grow"
+          withAsterisk
+          disabled={!db}
+          value={name}
+          onChange={(event) => setName(event.currentTarget.value)}
+        />
+        <Button
+          variant="outline"
+          color="blue"
+          disabled={!connUrl || !name}
+          onClick={saveGeneralLink}
+        >
           Create Connection
         </Button>
       </div>
       {urls?.length > 0 && (
         <>
           <p className="w-full text-center text-2xl mt-16">Or use an existing Dashboard</p>
-          {urls.map((url) => (
+          {[...urls].reverse().map((url) => (
             <Link
               className="w-full m-4 p-4 rounded-lg border-2 border-gray-200 hover:bg-blue-100"
               key={url.link}
