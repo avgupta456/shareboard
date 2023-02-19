@@ -4,8 +4,7 @@ export const getBarData = async (rawData) => {
   try {
     if (!rawData) return null;
     if (rawData.length < 2) return null;
-    if (rawData[0].length < 2) return null;
-    if (rawData[0].length > 2) return null;
+    if (Object.keys(rawData[0]).length !== 2) return null;
 
     let keys = Object.keys(rawData[0]);
 
