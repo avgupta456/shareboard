@@ -4,15 +4,16 @@ import React, { useEffect, useState } from "react";
 
 import { Button, MultiSelect, TextInput } from "@mantine/core";
 
-import { useSupabase } from "../../components/supabase-provider";
-import { selectGeneralLink } from "../../db/general_links/select";
+import Bar, { getBarData } from "../../components/figures/bar";
 import {
   OutputTable,
   TableHeaders,
   fetchTables as _fetchTables,
   handleQuery as _handleQuery,
   handleQuestion as _handleQuestion,
-} from "../shared";
+} from "../../components/shared";
+import { useSupabase } from "../../components/supabase-provider";
+import { selectGeneralLink } from "../../db/general_links/select";
 
 const Page = ({ params }: { params: { link: string } }) => {
   const { supabase } = useSupabase();
@@ -26,10 +27,7 @@ const Page = ({ params }: { params: { link: string } }) => {
   const [question, setQuestion] = useState("");
   const [query, setQuery] = useState("");
   const [output, setOutput] = useState([]);
-
-  console.log("Question", question);
-  console.log("Query", query);
-  console.log("Output", output);
+  const [barData, setBarData] = useState(null);
 
   useEffect(() => {
     const fetchGeneralLink = async () => {
@@ -65,6 +63,17 @@ const Page = ({ params }: { params: { link: string } }) => {
     handleQuery();
   }, [connUrl, query]);
 
+  useEffect(() => {
+    if (!output) return;
+
+    const updateBarData = async () => {
+      const newBarData = await getBarData(output);
+      setBarData(newBarData);
+    };
+
+    updateBarData();
+  }, [output]);
+
   if (!generalLink) {
     return (
       <div className="w-full container mx-auto flex-grow p-4 flex items-center justify-center">
@@ -72,6 +81,8 @@ const Page = ({ params }: { params: { link: string } }) => {
       </div>
     );
   }
+
+  console.log(barData);
 
   return (
     <div className="w-full container mx-auto flex-grow p-4 flex flex-col items-center justify-center">
@@ -110,8 +121,15 @@ const Page = ({ params }: { params: { link: string } }) => {
         <TableHeaders tableColumns={tableColumns} selectedTables={selectedTables} />
       </div>
       <div className="w-full text-center text-lg font-bold mt-4">Output</div>
-      <div className="w-full">
-        <OutputTable output={output} />
+      <div className="w-full flex">
+        <div className="flex-grow flex items-center">
+          <OutputTable output={output} />
+        </div>
+        {barData && (
+          <div className="w-[750px] h-[500px]">
+            <Bar data={barData} />
+          </div>
+        )}
       </div>
     </div>
   );

@@ -79,7 +79,7 @@ export const OutputTable = ({ output }) => {
   const rows = Array.isArray(output) ? output?.map((row) => Object.values(row)) : [];
 
   return (
-    <div className="w-full overflow-x-scroll scrollbar-hide text-sm">
+    <div className="w-full justify-center overflow-x-scroll scrollbar-hide text-sm">
       <table className="table-auto">
         <thead>
           <tr>

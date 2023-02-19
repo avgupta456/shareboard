@@ -7,16 +7,16 @@ import { BounceLoader } from "react-spinners";
 
 import { Button, MultiSelect, TextInput } from "@mantine/core";
 
-import { useSupabase } from "../../components/supabase-provider";
-import { insertGeneralLink } from "../../db/general_links/insert";
-import { selectUser } from "../../db/users/select";
 import {
   OutputTable,
   TableHeaders,
   fetchTables as _fetchTables,
   handleQuery as _handleQuery,
   handleQuestion as _handleQuestion,
-} from "../shared";
+} from "../../components/shared";
+import { useSupabase } from "../../components/supabase-provider";
+import { insertGeneralLink } from "../../db/general_links/insert";
+import { selectUser } from "../../db/users/select";
 import DBSelect from "./databases";
 
 // do not cache this page
