@@ -5,6 +5,8 @@ import { v4 as uuidv4 } from "uuid";
 import React, { useEffect, useState } from "react";
 import { BounceLoader } from "react-spinners";
 
+import Link from "next/link";
+
 import { Button, MultiSelect, TextInput } from "@mantine/core";
 
 import {
@@ -114,7 +116,16 @@ const Page = () => {
         <>
           <p className="w-full text-center text-2xl mt-16">Or use an existing Dashboard</p>
           {urls.map((url) => (
-            <p key={url.link}>{url.link}</p>
+            <Link
+              className="w-full m-4 p-4 rounded-lg border-2 border-gray-200 hover:bg-blue-100"
+              key={url.link}
+              href={`/${url.link}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <p className="text-lg">{url.name}</p>
+              <p className="text-md">{url.conn_str}</p>
+            </Link>
           ))}
         </>
       )}
