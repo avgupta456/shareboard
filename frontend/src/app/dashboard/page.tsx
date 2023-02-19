@@ -16,6 +16,7 @@ import {
 } from "../../components/shared";
 import { useSupabase } from "../../components/supabase-provider";
 import { insertGeneralLink } from "../../db/general_links/insert";
+import { selectGeneralLinks } from "../../db/general_links/select";
 import { selectUser } from "../../db/users/select";
 import DBSelect from "./databases";
 
@@ -30,18 +31,18 @@ const Page = () => {
   const [db, setDB] = useState(null);
   const [connUrl, setConnUrl] = useState("");
   const [debouncedConnUrl, setDebouncedConnUrl] = useState(null);
-  const [tables, setTables] = useState([]);
-  const [tableColumns, setTableColumns] = useState({});
-  const [selectedTables, setSelectedTables] = useState([]);
-  const [question, setQuestion] = useState("");
-  const [query, setQuery] = useState("");
-  const [output, setOutput] = useState([]);
+
+  const [urls, setUrls] = useState([]);
 
   useEffect(() => {
     if (!session) return;
     const fetchUser = async () => {
       const currUser = await selectUser(supabase, session);
       setUser(currUser);
+
+      const newUrls = await selectGeneralLinks(supabase, currUser.user_id);
+      setUrls(newUrls);
+
       setLoading(false);
     };
 
@@ -57,23 +58,21 @@ const Page = () => {
     return () => clearTimeout(timeout);
   }, [connUrl]);
 
+  // Realtime subscription
   useEffect(() => {
-    if (!debouncedConnUrl) return;
+    const channel = supabase
+      .channel("*")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "general_links" },
+        (payload) => setUrls((tasks) => [...tasks, payload.new as any])
+      )
+      .subscribe();
 
-    const fetchTables = async () => {
-      await _fetchTables(debouncedConnUrl, setTables, setTableColumns);
+    return () => {
+      supabase.removeChannel(channel);
     };
-
-    fetchTables();
-  }, [debouncedConnUrl]);
-
-  const handleQuestion = async () => {
-    await _handleQuestion(question, selectedTables, tables, tableColumns, setQuery);
-  };
-
-  const handleQuery = async () => {
-    await _handleQuery(query, connUrl, setOutput);
-  };
+  }, [supabase, setUrls, urls]);
 
   const saveGeneralLink = async () => {
     if (!connUrl) return;
@@ -82,7 +81,7 @@ const Page = () => {
     const link = uuidv4();
     const user_id = session.user.id;
 
-    await insertGeneralLink(supabase, link, user_id, connUrl, "Temp Name");
+    await insertGeneralLink(supabase, link, user_id, debouncedConnUrl, "Temp Name");
   };
 
   if (loading) {
@@ -95,8 +94,8 @@ const Page = () => {
 
   return (
     <div className="w-full container mx-auto flex-grow p-4 flex flex-col items-center">
-      <p className="w-full text-center text-2xl">Dashboard</p>
-      <div className="w-full flex gap-4">
+      <p className="w-full text-center text-2xl">Create a new Dashboard</p>
+      <div className="w-full flex gap-4 items-end">
         <DBSelect setSelected={setDB} />
         <TextInput
           label="Connection String"
@@ -108,65 +107,17 @@ const Page = () => {
           onChange={(event) => setConnUrl(event.currentTarget.value)}
         />
         <Button variant="outline" color="blue" disabled={!connUrl} onClick={saveGeneralLink}>
-          Save Connection
+          Create Connection
         </Button>
       </div>
-      <div className="w-full text-center text-lg font-bold mt-4">Either ask a question</div>
-      <div className="w-full flex flex-wrap gap-4 mt-4">
-        <TextInput
-          label="Question"
-          placeholder="Set Question"
-          className="flex-grow"
-          disabled={tables?.length === 0}
-          value={question}
-          onChange={(event) => setQuestion(event.currentTarget.value)}
-        />
-        <MultiSelect
-          label="Tables (optional)"
-          placeholder="Use Specific Tables"
-          disabled={tables?.length === 0}
-          className="w-96"
-          data={tables?.map((table) => ({ label: table, value: table })) ?? []}
-          value={selectedTables}
-          onChange={setSelectedTables}
-        />
-        <Button
-          variant="outline"
-          color="blue"
-          disabled={tables?.length === 0 || !question}
-          className="mt-6"
-          onClick={handleQuestion}
-        >
-          Ask Question
-        </Button>
-      </div>
-      <div className="w-full">
-        <TableHeaders tableColumns={tableColumns} selectedTables={selectedTables} />
-      </div>
-      <div className="w-full text-center text-lg font-bold mt-4">Or enter a SQL query directly</div>
-      <div className="w-full flex flex-wrap gap-4 mt-4">
-        <TextInput
-          label="Query"
-          placeholder="Set Query"
-          disabled={tables?.length === 0}
-          className="flex-grow"
-          value={query}
-          onChange={(event) => setQuery(event.currentTarget.value)}
-        />
-        <Button
-          variant="outline"
-          color="blue"
-          disabled={tables?.length === 0 || !query}
-          className="mt-6"
-          onClick={handleQuery}
-        >
-          Run Query
-        </Button>
-      </div>
-      <div className="w-full text-center text-lg font-bold mt-4">Output</div>
-      <div className="w-full">
-        <OutputTable output={output} />
-      </div>
+      {urls?.length > 0 && (
+        <>
+          <p className="w-full text-center text-2xl mt-16">Or use an existing Dashboard</p>
+          {urls.map((url) => (
+            <p key={url.link}>{url.link}</p>
+          ))}
+        </>
+      )}
     </div>
   );
 };
