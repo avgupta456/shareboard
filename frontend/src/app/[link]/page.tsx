@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 
-import { Button, MultiSelect, TextInput } from "@mantine/core";
+import { Button, MultiSelect, Progress, TextInput } from "@mantine/core";
 
 import Bar, { getBarData } from "../../components/figures/bar";
 import {
@@ -14,6 +14,7 @@ import {
 } from "../../components/shared";
 import { useSupabase } from "../../components/supabase-provider";
 import { selectGeneralLink } from "../../db/general_links/select";
+import { classnames } from "../../utils/utils";
 
 const Page = ({ params }: { params: { link: string } }) => {
   const { supabase } = useSupabase();
@@ -23,11 +24,43 @@ const Page = ({ params }: { params: { link: string } }) => {
   const [connUrl, setConnUrl] = useState("");
   const [tables, setTables] = useState([]);
   const [tableColumns, setTableColumns] = useState({});
+  const [showTableColumns, setShowTableColumns] = useState(false);
   const [selectedTables, setSelectedTables] = useState([]);
   const [question, setQuestion] = useState("");
   const [query, setQuery] = useState("");
   const [output, setOutput] = useState([]);
   const [barData, setBarData] = useState(null);
+
+  const [width, setWidth] = useState(0);
+  const [height, setHeight] = useState(0);
+
+  useEffect(() => {
+    const updateDimensions = () => {
+      setWidth(window.innerWidth);
+      setHeight(window.innerHeight);
+    };
+    window.addEventListener("resize", updateDimensions);
+    updateDimensions();
+    return () => window.removeEventListener("resize", updateDimensions);
+  }, []);
+
+  useEffect(() => {
+    setSelectedTables([]);
+    setQuestion("");
+    setQuery("");
+    setOutput([]);
+    setBarData(null);
+  }, [tables]);
+
+  useEffect(() => {
+    if (selectedTables.length === 0) {
+      setShowTableColumns(false);
+      setQuestion("");
+      setQuery("");
+      setOutput([]);
+      setBarData(null);
+    }
+  }, [selectedTables]);
 
   useEffect(() => {
     const fetchGeneralLink = async () => {
@@ -53,15 +86,9 @@ const Page = ({ params }: { params: { link: string } }) => {
     await _handleQuestion(question, selectedTables, tables, tableColumns, setQuery);
   };
 
-  useEffect(() => {
-    if (!query) return;
-
-    const handleQuery = async () => {
-      await _handleQuery(query, connUrl, setOutput);
-    };
-
-    handleQuery();
-  }, [connUrl, query]);
+  const handleQuery = async () => {
+    await _handleQuery(query, connUrl, setOutput);
+  };
 
   useEffect(() => {
     if (!output) return;
@@ -82,27 +109,32 @@ const Page = ({ params }: { params: { link: string } }) => {
     );
   }
 
-  console.log(barData);
-
   return (
     <div className="w-full container mx-auto flex-grow p-4 flex flex-col items-center justify-center">
       <div className="w-full text-center">
-        <h1 className="text-2xl font-bold">General Link: {generalLink.name}</h1>
+        <h1 className="text-2xl font-bold">{generalLink.name}</h1>
       </div>
-      <div className="w-full flex gap-4 mt-4">
-        <TextInput
-          label="Question"
-          placeholder="Set Question"
-          className="flex-grow"
-          disabled={tables?.length === 0}
-          value={question}
-          onChange={(event) => setQuestion(event.currentTarget.value)}
+      <div className="w-full my-4">
+        <Progress
+          radius="xl"
+          size={24}
+          sections={[
+            tables?.length > 0 && { value: 20, color: "blue", label: "Connect" },
+            selectedTables?.length > 0 && { value: 20, color: "pink", label: "Choose Tables" },
+            (question || query) && { value: 20, color: "grape", label: "Question" },
+            query && { value: 20, color: "violet", label: "Query" },
+            output?.length > 0 && { value: 20, color: "blue", label: "Output" },
+          ]}
         />
+      </div>
+      <div className="text-lg font-bold mt-4">Specify Tables</div>
+      <div className="w-1/2 flex gap-4 mt-4">
         <MultiSelect
-          label="Tables (optional)"
+          label="Tables"
           placeholder="Use Specific Tables"
           disabled={tables?.length === 0}
-          className="w-96"
+          withAsterisk
+          className="flex-grow"
           data={tables?.map((table) => ({ label: table, value: table })) ?? []}
           value={selectedTables}
           onChange={setSelectedTables}
@@ -110,26 +142,65 @@ const Page = ({ params }: { params: { link: string } }) => {
         <Button
           variant="outline"
           color="blue"
-          disabled={tables?.length === 0 || !question}
+          disabled={selectedTables?.length === 0}
           className="mt-6"
-          onClick={handleQuestion}
+          onClick={() => setShowTableColumns(!showTableColumns)}
         >
-          Ask Question
+          {showTableColumns ? "Hide" : "Show"} Table Columns
         </Button>
       </div>
-      <div className="w-full">
+      {showTableColumns && (
         <TableHeaders tableColumns={tableColumns} selectedTables={selectedTables} />
+      )}
+      <div className="w-full flex gap-8 mt-4">
+        <div className="w-1/2 flex flex-col">
+          <div className="w-full text-center text-lg font-bold mt-4">Either Ask a Question</div>
+          <TextInput
+            label="Question"
+            placeholder="Set Question"
+            className="flex-grow"
+            disabled={tables?.length === 0}
+            value={question}
+            onChange={(event) => setQuestion(event.currentTarget.value)}
+          />
+          <Button
+            variant="outline"
+            color="blue"
+            disabled={tables?.length === 0 || !question}
+            className="mt-6"
+            onClick={handleQuestion}
+          >
+            Ask Question
+          </Button>
+        </div>
+        <div className="w-1/2 flex flex-col">
+          <div className="w-full text-center text-lg font-bold mt-4">Or Write a Query</div>
+          <TextInput
+            label="Query"
+            placeholder="Set Query"
+            disabled={tables?.length === 0}
+            className="flex-grow"
+            value={query}
+            onChange={(event) => setQuery(event.currentTarget.value)}
+          />
+          <Button
+            variant="outline"
+            color="blue"
+            disabled={tables?.length === 0 || !query}
+            className="mt-6"
+            onClick={handleQuery}
+          >
+            Run Query
+          </Button>
+        </div>
       </div>
-      <div className="w-full text-center text-lg font-bold mt-4">Output</div>
-      <div className="w-full flex">
-        <div className="flex-grow flex items-center">
+
+      <div className="w-full text-center text-lg font-bold mt-8">Output</div>
+      <div className="w-full flex mt-4">
+        <div className={classnames(barData ? "w-1/2" : "w-full", "h-full")}>
           <OutputTable output={output} />
         </div>
-        {barData && (
-          <div className="w-[750px] h-[500px]">
-            <Bar data={barData} />
-          </div>
-        )}
+        {barData && <Bar data={barData} width={width / 2} height={400} />}
       </div>
     </div>
   );

@@ -1,9 +1,9 @@
-import { ResponsiveBar } from "@nivo/bar";
+import { Bar } from "@nivo/bar";
 
 export const getBarData = async (rawData) => {
   try {
     if (!rawData) return null;
-    if (rawData.length === 0) return null;
+    if (rawData.length < 2) return null;
     if (rawData[0].length < 2) return null;
     if (rawData[0].length > 2) return null;
 
@@ -16,7 +16,7 @@ export const getBarData = async (rawData) => {
 
     const data = rawData.map((d) => {
       return {
-        name: d[x],
+        name: d[x].toString(),
         value: parseFloat(d[y]),
       };
     });
@@ -27,9 +27,11 @@ export const getBarData = async (rawData) => {
   }
 };
 
-const Bar = ({ data }) => {
+const MyBar = ({ data, width, height }: { data: any; width: number; height: number }) => {
   return (
-    <ResponsiveBar
+    <Bar
+      width={width}
+      height={height}
       data={data}
       keys={["value"]}
       indexBy="name"
@@ -40,4 +42,4 @@ const Bar = ({ data }) => {
   );
 };
 
-export default Bar;
+export default MyBar;

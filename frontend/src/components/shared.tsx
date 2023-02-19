@@ -56,11 +56,10 @@ export const handleQuery = async (query, connUrl, setOutput) => {
 
 export const TableHeaders = ({ tableColumns, selectedTables }) => {
   return (
-    <>
-      <div className="w-full mt-2 font-bold">Table Headers</div>
+    <div className="w-full flex flex-col text-sm mt-4">
       {selectedTables.map((table, i) => (
         <div key={i} className="w-full flex flex-col mb-2">
-          <div>{table}</div>
+          <div className="w-full text-center text-base font-bold mb-1">{table}</div>
           <div className="w-full flex flex-row overflow-x-scroll scrollbar-hide">
             {tableColumns[table].map((column, j) => (
               <div key={j} className={classnames("px-2 py-1 text-sm", j % 2 && "bg-gray-100")}>
@@ -70,7 +69,7 @@ export const TableHeaders = ({ tableColumns, selectedTables }) => {
           </div>
         </div>
       ))}
-    </>
+    </div>
   );
 };
 
@@ -79,8 +78,8 @@ export const OutputTable = ({ output }) => {
   const rows = Array.isArray(output) ? output?.map((row) => Object.values(row)) : [];
 
   return (
-    <div className="w-full justify-center overflow-x-scroll scrollbar-hide text-sm">
-      <table className="table-auto">
+    <div className="w-full overflow-x-scroll scrollbar-hide text-sm">
+      <table className="table-auto mx-auto">
         <thead>
           <tr>
             {headers.map((header, i) => (
