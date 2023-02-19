@@ -7,16 +7,16 @@ import { BounceLoader } from "react-spinners";
 
 import Link from "next/link";
 
-import { Button, MultiSelect, TextInput } from "@mantine/core";
+import { Button, TextInput } from "@mantine/core";
+import { IconTrash } from "@tabler/icons-react";
 
 import {
-  OutputTable,
-  TableHeaders,
   fetchTables as _fetchTables,
   handleQuery as _handleQuery,
   handleQuestion as _handleQuestion,
 } from "../../components/shared";
 import { useSupabase } from "../../components/supabase-provider";
+import { deleteGeneralLink } from "../../db/general_links/delete";
 import { insertGeneralLink } from "../../db/general_links/insert";
 import { selectGeneralLinks } from "../../db/general_links/select";
 import { selectUser } from "../../db/users/select";
@@ -70,6 +70,14 @@ const Page = () => {
         { event: "INSERT", schema: "public", table: "general_links" },
         (payload) => setUrls((tasks) => [...tasks, payload.new as any])
       )
+      .on(
+        "postgres_changes",
+        { event: "DELETE", schema: "public", table: "general_links" },
+        (payload) => {
+          const newUrls = urls.filter((url) => url.link !== payload.old.link);
+          setUrls(newUrls);
+        }
+      )
       .subscribe();
 
     return () => {
@@ -86,6 +94,12 @@ const Page = () => {
     const user_id = session.user.id;
 
     await insertGeneralLink(supabase, link, user_id, debouncedConnUrl, name);
+  };
+
+  const removeGeneralLink = async (url) => {
+    if (!url?.link) return;
+
+    await deleteGeneralLink(supabase, url.link);
   };
 
   if (loading) {
@@ -139,8 +153,22 @@ const Page = () => {
               target="_blank"
               rel="noopener noreferrer"
             >
-              <p className="text-lg">{url.name}</p>
-              <p className="text-md">{url.conn_str}</p>
+              <div className="flex justify-between">
+                <div className="flex flex-col">
+                  <p className="text-lg">{url.name}</p>
+                  <p className="text-md">{url.conn_str}</p>
+                </div>
+                <div className="flex flex-col justify-center">
+                  <IconTrash
+                    size={36}
+                    className="hover:bg-red-200 p-2 rounded-xl"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      removeGeneralLink(url);
+                    }}
+                  />
+                </div>
+              </div>
             </Link>
           ))}
         </>

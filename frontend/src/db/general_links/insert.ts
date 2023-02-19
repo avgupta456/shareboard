@@ -7,7 +7,7 @@ export const insertGeneralLink = async (
   conn_str: string,
   name: string
 ) => {
-  const { data, error } = await supabase.from("general_links").insert([
+  const { error } = await supabase.from("general_links").insert([
     {
       link,
       user_id,
@@ -18,6 +18,5 @@ export const insertGeneralLink = async (
 
   if (error) {
     console.log(error);
-    return null;
   }
 };
